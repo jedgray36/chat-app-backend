@@ -5,54 +5,50 @@ const dotenv = require("dotenv");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const multer = require("multer");
-const userRoute = require("./routes/users");
-const authRoute = require("./routes/auth");
-const postRoute = require("./routes/posts");
-const conversationRoute = require("./routes/conversations");
-const messageRoute = require("./routes/message");
-const router = express.Router();
-const path = require("path");
+const userRoute = require("./routes/User");
+const authRoute = require("./routes/Auth");
+const conversationRoute = require("./routes/Conversations");
+const messageRoute = require("./routes/Messages");
 
 dotenv.config();
 
-mongoose.connect(
-  process.env.MONGO_URL,
-  { useNewUrlParser: true, useUnifiedTopology: true },
-  () => {
-    console.log("Connected to MongoDB");
-  }
-);
-app.use("/images", express.static(path.join(__dirname, "public/images")));
 
+const mongoURL = 'mongodb+srv://jedgray0:GVEk5n9zM4MvC02z@cluster0.17m9tt5.mongodb.net/?retryWrites=true&w=majority'
+
+
+mongoose.connect(
+  mongoURL,
+  { useNewUrlParser: true, useUnifiedTopology: true }
+).then(() => {
+  console.log("Connected to MongoDB");
+}).catch((error) => {
+  console.log("error connecting:", error);
+})
 //middleware
 app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/images");
-  },
   filename: (req, file, cb) => {
     cb(null, req.body.name);
   },
 });
 
 const upload = multer({ storage: storage });
-app.post("/api/upload", upload.single("file"), (req, res) => {
-  try {
-    return res.status(200).json("File uploded successfully");
-  } catch (error) {
-    console.error(error);
-  }
-});
+// app.post("/api/upload", upload.single("file"), (req, res) => {
+//   try {
+//     return res.status(200).json("File uploded successfully");
+//   } catch (error) {
+//     console.error(error);
+//   }
+// });
 
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
-app.use("/api/posts", postRoute);
 app.use("/api/conversations", conversationRoute);
 app.use("/api/messages", messageRoute);
 
-app.listen(8800, () => {
+app.listen(3001, () => {
   console.log("Backend server is running!");
 });
